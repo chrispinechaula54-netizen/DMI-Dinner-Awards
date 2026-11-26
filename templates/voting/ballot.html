@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load voting_tags %}
+{% block title %}Final Voting · DMI Class of 2027{% endblock %}
+{% block extra_head %}
+<style>
+    .vote-option { display:block; cursor:pointer; height:100%; }
+    .vote-radio { position:absolute; opacity:0; width:1px; height:1px; overflow:hidden; }
+    .vote-card { position:relative; min-height:74px; height:100%; display:flex; flex-direction:row; align-items:center; justify-content:flex-start; gap:.85rem; padding:.65rem .9rem; text-align:left; border:1px solid #333; border-radius:1rem; background:#121212; transition:border-color .16s ease, background .16s ease, box-shadow .16s ease; }
+    .vote-option:hover .vote-card { border-color:#d6a83b; transform:translateY(-2px); }
+    .vote-radio:checked + .vote-card { border:2px solid #fbbf24; background:rgba(245,158,11,.12); box-shadow:0 0 18px rgba(245,158,11,.16); }
+    .vote-radio:focus-visible + .vote-card { outline:3px solid #fbbf24; outline-offset:3px; }
+    .candidate-avatar { width:2.85rem; height:2.85rem; flex:none; display:flex; align-items:center; justify-content:center; border-radius:9999px; border:1px solid rgba(251,191,36,.55); background:linear-gradient(145deg,#3b2c12,#17120a); color:#fcd34d; font-weight:700; font-size:.78rem; letter-spacing:.05em; }
+    .candidate-name { min-width:0; flex:1; color:#f5f5f5; font-size:.92rem; font-weight:600; line-height:1.35; overflow-wrap:anywhere; }
+    .vote-state { position:relative; flex:none; min-width:5.2rem; padding:.45rem .65rem; border:1px solid #555; border-radius:9999px; text-align:center; }
+    .vote-action,.vote-selected { font-size:.66rem; font-weight:700; letter-spacing:.035em; text-transform:uppercase; white-space:nowrap; }
+    .vote-action { color:#fcd34d; }
+    .vote-selected { display:none; color:#6ee7b7; }
+    .vote-burst { display:none; position:absolute; top:-.35rem; right:-.35rem; width:1.35rem; height:1.35rem; align-items:center; justify-content:center; border-radius:9999px; color:#052e1b; background:#34d399; font-size:.85rem; font-weight:900; box-shadow:0 0 0 4px rgba(52,211,153,.15); }
+    .vote-radio:checked + .vote-card .vote-action { display:none; }
+    .vote-radio:checked + .vote-card .vote-selected,.vote-radio:checked + .vote-card .vote-burst { display:flex; }
+    .vote-radio:checked + .vote-card .vote-burst { animation:vote-pop .42s cubic-bezier(.2,.85,.3,1.4) both; }
+    @keyframes vote-pop { 0% { opacity:0; transform:scale(.2) rotate(-25deg); } 70% { opacity:1; transform:scale(1.2) rotate(8deg); } 100% { opacity:1; transform:scale(1) rotate(0); } }
+    @media (max-width:420px) { .vote-card { min-height:68px; gap:.6rem; padding:.55rem .65rem; } .candidate-avatar { width:2.55rem; height:2.55rem; font-size:.72rem; } .candidate-name { font-size:.84rem; } .vote-state { min-width:4.5rem; padding:.4rem .45rem; } .vote-action,.vote-selected { font-size:.6rem; } }
+    @media (prefers-reduced-motion:reduce) { .vote-card,.vote-burst { animation:none!important; transition:none!important; } }
+</style>
+{% endblock %}
+{% block content %}
+<section class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+    <div class="mb-8">
+        <p class="text-amber-400 uppercase tracking-widest text-xs">DMI St. John the Baptist University · Class of 2027</p>
+        <h1 class="text-3xl sm:text-4xl font-bold mt-2">Finale Awards Voting</h1>
+        <p class="text-neutral-400 mt-2">Tap a candidate card to select one person or complete pair in each division.</p>
+    </div>
+    {% if preview %}<p class="mb-5 rounded border border-amber-500/30 p-3 text-amber-300">Administrator preview · selections are disabled.</p>{% endif %}
+    {% if categories %}
+    <form method="post" action="{% url 'final_voting:submit' %}">
+        {% csrf_token %}
+        {% for category in categories %}
+        <article class="mb-8 rounded-2xl border border-amber-500/20 bg-neutral-900/80 p-5 sm:p-7">
+            <h2 class="text-xl sm:text-2xl font-semibold text-amber-300">{{ category.name }}</h2>
+            {% for division in category.divisions.all %}
+            <div class="mt-5">
+                <h3 class="text-sm uppercase tracking-widest text-neutral-400 mb-3">{{ division.label|default:'Choose one' }}</h3>
+                <div class="space-y-2">
+                    {% for candidate in division.candidates.all %}
+                        {% if candidate.confirmed %}
+                        <label class="vote-option relative">
+                            <input class="vote-radio" type="radio" {% if preview %}disabled{% endif %} name="division_{{ division.id }}" value="{{ candidate.id }}" {% if selected|get_item:division.id == candidate.id %}checked{% endif %} required>
+                            <span class="vote-card">
+                                <span class="candidate-avatar" aria-hidden="true">{{ candidate.name|voting_initials }}</span>
+                                <span class="candidate-name">{{ candidate.name }}</span>
+                                <span class="vote-state"><span class="vote-action">Vote now</span><span class="vote-selected">Voted</span><span class="vote-burst" aria-hidden="true">✓</span></span>
+                            </span>
+                        </label>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </article>
+        {% endfor %}
+        {% if not preview %}<div class="sticky bottom-0 py-4 bg-neutral-950/95"><button class="w-full sm:w-auto rounded-full bg-amber-500 px-8 py-3 font-bold text-neutral-950 hover:bg-amber-400">Submit my final ballot</button></div>{% endif %}
+    </form>
+    {% else %}
+    <p class="rounded-xl border border-neutral-700 p-6 text-neutral-300">The approved final ballot is being prepared. Please check back when voting is open.</p>
+    {% endif %}
+</section>
+{% endblock %}

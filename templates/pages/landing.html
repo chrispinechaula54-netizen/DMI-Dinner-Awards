@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}DMI Class of 2027 Finale Awards{% endblock %}
+
+{% block content %}
+<section class="relative flex items-center overflow-hidden" style="background-image: linear-gradient(to bottom, rgba(0,0,0,.35), rgba(0,0,0,.4) 55%, rgba(10,10,10,.92)), url('{% static 'images/finale-awards-stage.webp' %}'); background-size: cover; background-position: center; min-height: 72vh;">
+    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 relative z-10 text-center py-24">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-amber-500/40 bg-neutral-900/80 mb-6">
+            <span class="w-2 h-2 rounded-full {% if election.status == 'open' %}bg-emerald-400 animate-pulse{% else %}bg-amber-400{% endif %}"></span>
+            <span class="text-xs font-semibold tracking-wider uppercase text-amber-300">Final voting {{ election.get_status_display }}</span>
+        </div>
+        <h1 class="text-4xl sm:text-6xl lg:text-7xl font-heading font-bold text-white max-w-4xl mx-auto leading-tight">DMI Class of 2027<br><span class="text-amber-300">Finale Awards</span></h1>
+        <p class="mt-6 text-base sm:text-xl text-white/90 max-w-2xl mx-auto">Celebrate the people and moments that made our class. Cast your final ballot in the official awards.</p>
+        <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="{% url 'final_voting:ballot' %}" class="w-full sm:w-auto px-8 py-4 rounded-full font-heading font-bold text-base bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-neutral-950 shadow-[0_0_25px_rgba(201,168,76,0.4)]">Go to Final Voting →</a>
+            <a href="#categories" class="w-full sm:w-auto px-8 py-4 rounded-full text-neutral-200 bg-neutral-900/80 border border-amber-500/30">View Award Categories</a>
+        </div>
+    </div>
+</section>
+
+<section id="categories" class="py-16 sm:py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-10">
+            <div><span class="text-xs uppercase tracking-[0.2em] font-semibold text-amber-400 block mb-2">The Honors List</span><h2 class="text-3xl sm:text-4xl font-heading font-bold">Finale Award Categories</h2></div>
+            <p class="text-sm text-neutral-400 mt-2">{{ categories_count }} official award categories</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {% for category in categories %}
+            <article class="bg-neutral-900 border border-neutral-800 hover:border-amber-500/50 rounded-2xl p-6 transition-colors">
+                <div class="flex items-center justify-between gap-2 mb-3"><span class="text-xs font-bold text-amber-400 bg-neutral-800 px-2.5 py-1 rounded-md">#{{ category.display_order }}</span><span class="text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded-full bg-neutral-800 border border-neutral-700 text-neutral-300">{{ category.get_method_display }}</span></div>
+                <h3 class="text-xl font-heading font-bold text-neutral-100 mb-2">{{ category.name }}</h3>
+                <p class="text-xs text-neutral-400">{% if category.method == 'online' %}Vote for the approved candidate in each division.{% elif category.method == 'dinner' %}The final result will be recorded at the Finale Dinner.{% else %}Selection will use administrative academic data.{% endif %}</p>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
